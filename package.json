@@ -1,0 +1,12 @@
+{
+  "name": "tfboy1-profile-artwork",
+  "private": true,
+  "version": "1.0.0",
+  "description": "GitHub 个人主页的原创动态 SVG 构建工具",
+  "scripts": {
+    "build": "node scripts/build-assets.mjs"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
