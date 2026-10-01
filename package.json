@@ -6,7 +6,7 @@
   "scripts": {
     "build": "node scripts/build-assets.mjs",
     "refresh": "node scripts/refresh-profile.mjs",
-    "test:data": "node --test scripts/profile-data.test.mjs"
+    "test:data": "node --test scripts/profile-data.test.mjs scripts/repository-data.test.mjs scripts/snake-route.test.mjs"
   },
   "engines": {
     "node": ">=18"

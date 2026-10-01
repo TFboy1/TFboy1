@@ -2,7 +2,7 @@ name: Refresh profile artwork
 
 on:
   schedule:
-    - cron: "17 */12 * * *"
+    - cron: "2-57/5 * * * *"
   workflow_dispatch:
   push:
     branches:
@@ -38,10 +38,15 @@ jobs:
           node-version: 24
           package-manager-cache: false
 
-      - name: Check contribution data handling
+      - name: Sync the latest main branch before generating
+        run: git pull --ff-only origin main
+
+      - name: Check profile data handling
         run: npm run test:data
 
       - name: Refresh the real GitHub contribution data
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
         run: npm run refresh
 
       - name: Build local profile images
@@ -49,12 +54,11 @@ jobs:
 
       - name: Commit refreshed assets
         run: |
-          git add assets data/github-contributions.json README.md
+          git add assets data/github-contributions.json data/github-repositories.json README.md
           if git diff --cached --quiet; then
             exit 0
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git commit -m "Refresh profile contribution artwork"
-          git pull --rebase origin main
+          git commit -m "Refresh profile contribution artwork and repository stats"
           git push origin HEAD:main

@@ -1,0 +1,40 @@
+{
+  "schemaVersion": 1,
+  "repositories": {
+    "TFboy1/academic-paper-writer": {
+      "stars": 250,
+      "forks": 14,
+      "fetchedAt": "2026-10-01T15:21:32.250Z"
+    },
+    "TFboy1/oh-my-minimaxh3-director": {
+      "stars": 136,
+      "forks": 18,
+      "fetchedAt": "2026-10-01T15:21:32.081Z"
+    },
+    "TFboy1/vibe-git": {
+      "stars": 2,
+      "forks": 0,
+      "fetchedAt": "2026-10-01T15:21:32.254Z"
+    },
+    "TFboy1/dsh-minecraft-ui": {
+      "stars": 18,
+      "forks": 0,
+      "fetchedAt": "2026-10-01T15:21:32.251Z"
+    },
+    "TFboy1/ChatGPT-Share-Gate": {
+      "stars": 6,
+      "forks": 0,
+      "fetchedAt": "2026-10-01T15:21:32.248Z"
+    },
+    "TFboy1/AutoList": {
+      "stars": 0,
+      "forks": 0,
+      "fetchedAt": "2026-10-01T15:21:32.249Z"
+    },
+    "TFboy1/MITI": {
+      "stars": 0,
+      "forks": 0,
+      "fetchedAt": "2026-10-01T15:21:32.265Z"
+    }
+  }
+}

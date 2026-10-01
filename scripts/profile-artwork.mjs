@@ -1,4 +1,6 @@
 // Text project catalogue and original contribution artwork, generated offline.
+import { contributionRoute } from './snake-route.mjs';
+import { repositorySlug } from './repository-data.mjs';
 export function createProfileArtwork({ svg, text, theme, escapeXml }) {
   function syncLabel(snapshot) {
     return new Intl.DateTimeFormat('sv-SE', {
@@ -21,10 +23,10 @@ export function createProfileArtwork({ svg, text, theme, escapeXml }) {
       const row = dayIndex % 7;
       return { ...day, column, row, x: 83 + column * step, y: 120 + row * step };
     });
-    const route = [...cells].sort((left, right) => left.column - right.column || (left.column % 2 ? right.row - left.row : left.row - right.row));
-    const positions = new Map(route.map((cell, index) => [cell.date, index]));
+    const route = contributionRoute(cells);
+    const positions = new Map();
+    route.forEach((cell, index) => { if (!positions.has(cell.date)) positions.set(cell.date, index); });
     const path = route.map((cell, index) => `${index ? 'L' : 'M'}${cell.x} ${cell.y}`).join('');
-    const headFrames = route.map((cell, index) => `${(index / (route.length - 1) * 100).toFixed(3)}%{transform:translate(${cell.x}px,${cell.y}px)}`).join('');
     const labels = new Map();
     let previousMonth = '';
     for (const cell of cells) {
@@ -34,7 +36,7 @@ export function createProfileArtwork({ svg, text, theme, escapeXml }) {
         previousMonth = month;
       }
     }
-    const rectangles = cells.map(cell => `<rect x="${cell.x - 6}" y="${cell.y - 6}" width="12" height="12" rx="3" fill="${colors[cell.level]}"${cell.count > 0 ? ` class="snake-food" style="animation-delay:${(positions.get(cell.date) / (route.length - 1) * 38).toFixed(3)}s"` : ''}><title>${cell.date} / ${cell.count} 次贡献</title></rect>`).join('');
+    const rectangles = cells.map(cell => `<rect x="${cell.x - 6}" y="${cell.y - 6}" width="12" height="12" rx="3" fill="${colors[cell.level]}"${cell.count > 0 ? ` class="snake-food" style="animation-delay:${(positions.get(cell.date) / Math.max(1, route.length - 1) * 38).toFixed(3)}s"` : ''}><title>${cell.date} / ${cell.count} 次贡献</title></rect>`).join('');
     const content = `
       ${!dark ? '<rect width="1120" height="316" fill="#f4f7fc"/>' : ''}
       ${text(48, 48, 'Contribution snake', 24, foreground, 'font-weight="700" letter-spacing="-.5"')}
@@ -42,27 +44,25 @@ export function createProfileArtwork({ svg, text, theme, escapeXml }) {
       ${[...labels.values()].join('')}
       ${[1, 3, 5].map(row => text(62, 124 + row * step, ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'][row], 9, muted, 'class="mono" text-anchor="end"')).join('')}
       ${rectangles}
-      <path d="${path}" stroke="${accent}" stroke-opacity=".035" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-      <path d="${path}" pathLength="1000" class="snake-tail" stroke="${accent}" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" filter="url(#glow)"/>
-      <g class="snake-head" transform="translate(${route[0].x} ${route[0].y})">
+      ${route.length > 1 ? `<use href="#snake-route" class="snake-tail" stroke="${accent}" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" filter="url(#glow)"/>
+      <g class="snake-head">
         <path d="M0-8L2-2L8 0L2 2L0 8L-2 2L-8 0L-2-2Z" fill="${accent}" filter="url(#glow)"/>
-      </g>
+        <animateMotion dur="38s" repeatCount="indefinite" calcMode="linear"><mpath href="#snake-route"/></animateMotion>
+      </g>` : ''}
       ${text(48, 282, `${snapshot.days[0].date} → ${snapshot.days.at(-1).date}`, 10, muted, 'class="mono"')}
       ${text(1072, 282, `SYNC / ${syncLabel(snapshot)} CST`, 10, muted, 'class="mono" text-anchor="end"')}
-      ${text(48, 301, '每一格来自真实贡献记录，金色星芒沿日历巡游。', 11, muted)}
+      ${text(48, 301, '按真实贡献寻路 · 数据变化后自动更新', 11, muted)}
     `;
-    const css = `<style><![CDATA[
+    const css = `<path id="snake-route" d="${path}" pathLength="1000"/><style><![CDATA[
       .snake-tail{stroke-dasharray:22 978;stroke-dashoffset:22;animation:snake-tail 38s linear infinite}
-      .snake-head{animation:snake-head 38s linear infinite}
       .snake-food{animation:snake-food 38s linear infinite}
       @keyframes snake-tail{from{stroke-dashoffset:22}to{stroke-dashoffset:-978}}
-      @keyframes snake-head{${headFrames}}
       @keyframes snake-food{0%,.2%{opacity:1}.4%,2%{opacity:.35}5%,100%{opacity:1}}
     ]]></style>`;
     return svg(316, `${snapshot.username} 的贡献贪吃蛇动画`, `基于真实 GitHub 贡献日历生成的原创巡游动画。展示区间共有 ${snapshot.totalContributions} 次贡献，数据更新于 ${syncLabel(snapshot)}，使用北京时间。`, content, css);
   }
 
-  function projectSection(projects, pinnedOrder) {
+  function projectSection(projects, pinnedOrder, repositorySnapshot = { repositories: {} }) {
     const byId = new Map(projects.map(project => [project.id, project]));
     if (!Array.isArray(pinnedOrder) || !pinnedOrder.length || new Set(pinnedOrder).size !== pinnedOrder.length || pinnedOrder.some(id => !byId.has(id) || !byId.get(id).repo)) {
       throw new Error('pinnedOrder 必须包含唯一、存在且具有仓库链接的项目 ID。');
@@ -70,18 +70,22 @@ export function createProfileArtwork({ svg, text, theme, escapeXml }) {
     const pinned = pinnedOrder.map(id => byId.get(id));
     const remaining = projects.filter(project => !pinnedOrder.includes(project.id));
     function entry(project, isPinned = false) {
-      const primary = project.repo || project.previewUrl || 'https://tfboyhomepage.netlify.app/';
       const name = isPinned ? new URL(project.repo).pathname.split('/').filter(Boolean).at(-1) : project.title;
       const heading = isPinned ? 'h3' : 'h4';
       const links = [];
-      if (project.repo) links.push(`<a href="${escapeXml(project.repo)}">源码 ↗</a>`);
+      if (project.repo) {
+        const stats = repositorySnapshot.repositories[repositorySlug(project.repo)];
+        links.push(`<a href="${escapeXml(project.repo)}"><kbd>GitHub ↗</kbd></a>`);
+        links.push(`<a href="${escapeXml(project.repo)}/stargazers"><kbd>★ Stars ${stats?.stars ?? '—'}</kbd></a>`);
+        links.push(`<a href="${escapeXml(project.repo)}/forks"><kbd>⑂ Forks ${stats?.forks ?? '—'}</kbd></a>`);
+      }
       if (project.previewUrl && project.previewUrl !== project.repo) {
         const label = project.category === 'games' ? '试玩' : project.id === 'vibe-git' ? '文档' : '打开';
-        links.push(`<a href="${escapeXml(project.previewUrl)}">${label} ↗</a>`);
+        links.push(`<a href="${escapeXml(project.previewUrl)}"><kbd>${label} ↗</kbd></a>`);
       }
-      if (project.download) links.push(`<a href="${escapeXml(project.download)}">下载 ↗</a>`);
-      if (!links.length) links.push('<a href="https://tfboyhomepage.netlify.app/">作品介绍 ↗</a>');
-      return `<${heading}><a href="${escapeXml(primary)}">${escapeXml(name)}</a></${heading}>\n\n${escapeXml(project.description)}\n\n<code>${escapeXml(project.tags.join(' · '))}</code>${project.status === 'polishing' ? ' · <strong>正在打磨</strong>' : ''} · ${links.join(' · ')}`;
+      if (project.download) links.push(`<a href="${escapeXml(project.download)}"><kbd>下载 ↗</kbd></a>`);
+      if (!links.length) links.push('<a href="https://tfboyhomepage.netlify.app/"><kbd>作品介绍 ↗</kbd></a>');
+      return `<${heading}>${escapeXml(name)}</${heading}>\n\n${escapeXml(project.description)}\n\n<code>${escapeXml(project.tags.join(' · '))}</code>${project.status === 'polishing' ? ' · <strong>正在打磨</strong>' : ''}\n\n${links.join(' &nbsp; ')}`;
     }
     const categories = [['tools','AI 与开发工具'],['games','游戏与互动世界'],['apps','应用与日常工具']];
     const others = categories.map(([category,title]) => {

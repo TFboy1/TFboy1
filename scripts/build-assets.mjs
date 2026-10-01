@@ -1,5 +1,6 @@
 import { mkdir, readFile, writeFile, unlink, rmdir } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
+import { createHash } from 'node:crypto';
 import { createProfileArtwork } from './profile-artwork.mjs';
 
 // Self-contained vector artwork, without remote fonts, images or scripts.
@@ -131,12 +132,13 @@ ${mobile ? text(300, 383, 'AI TOOLS · GAMES · USEFUL APPS', 11, '#8faac7', 'cl
 const outputDirectory = new URL('../assets/', import.meta.url);
 const { projects, pinnedOrder } = JSON.parse(await readFile(new URL('../data/projects.json', import.meta.url), 'utf8'));
 const calendar = JSON.parse(await readFile(new URL('../data/github-contributions.json', import.meta.url), 'utf8'));
+const repositories = JSON.parse(await readFile(new URL('../data/github-repositories.json', import.meta.url), 'utf8'));
 const readmePath = new URL('../README.md', import.meta.url);
 const readme = await readFile(readmePath, 'utf8');
 if (!readme.includes('<!-- PROJECTS:START -->') || !readme.includes('<!-- PROJECTS:END -->')) throw new Error('README 缺少作品展示区构建标记。');
 if (new Set(projects.map(project => project.id)).size !== projects.length || projects.some(project => !/^[a-z0-9-]+$/.test(project.id))) throw new Error('项目 ID 必须唯一，且只能包含小写字母、数字和短横线。');
 const profileArtwork = createProfileArtwork({ svg, text, theme, escapeXml });
-const projectSection = profileArtwork.projectSection(projects, pinnedOrder);
+const projectSection = profileArtwork.projectSection(projects, pinnedOrder, repositories);
 const artwork = [
   ['hero.svg', hero()], ['hero-mobile.svg', hero(true)],
   ['github-contribution-grid-snake.svg', profileArtwork.snake(calendar, false)],
@@ -155,6 +157,8 @@ for (const name of obsolete) {
   await unlink(new URL(name, outputDirectory)).catch(error => { if (error.code !== 'ENOENT') throw error; });
 }
 await rmdir(new URL('projects/', outputDirectory)).catch(error => { if (!['ENOENT', 'ENOTEMPTY', 'EEXIST'].includes(error.code)) throw error; });
-const updatedReadme = readme.replace(/(<!-- PROJECTS:START -->)[\s\S]*?(<!-- PROJECTS:END -->)/, (_, start, end) => `${start}\n\n${projectSection}\n\n${end}`);
+const snakeVersion = createHash('sha256').update(artwork.slice(2).map(([, content]) => content).join('')).digest('hex').slice(0, 12);
+const updatedReadme = readme.replace(/(<!-- PROJECTS:START -->)[\s\S]*?(<!-- PROJECTS:END -->)/, (_, start, end) => `${start}\n\n${projectSection}\n\n${end}`)
+  .replace(/(\.\/assets\/github-contribution-grid-snake(?:-dark)?\.svg)(?:\?v=[a-f0-9]+)?/g, (_, path) => `${path}?v=${snakeVersion}`);
 if (updatedReadme !== readme) await writeFile(readmePath, updatedReadme, 'utf8');
 console.log(`\nGenerated ${artwork.length} SVG assets in ${fileURLToPath(outputDirectory)}; desktop pair ${(desktopBytes / 1024).toFixed(1)} KiB`);

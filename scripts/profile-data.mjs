@@ -1,4 +1,4 @@
-import { mkdir, rename, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, rename, writeFile } from 'node:fs/promises';
 
 function attribute(attributes, name) {
   return attributes.match(new RegExp(`\\b${name}="([^"]*)"`))?.[1];
@@ -81,6 +81,14 @@ export async function refreshCalendar(username = 'TFboy1') {
     days,
   };
   const directory = new URL('../data/', import.meta.url);
+  try {
+    const previous = JSON.parse(await readFile(new URL('github-contributions.json', directory), 'utf8'));
+    if (previous.schemaVersion === 1 && previous.username === username && previous.source === source
+      && previous.totalContributions === snapshot.totalContributions && JSON.stringify(previous.days) === JSON.stringify(days)) {
+      console.log(`已检查 ${username} 的真实贡献数据，内容未变化，保留已有快照。`);
+      return;
+    }
+  } catch (error) { if (error.code !== 'ENOENT') throw error; }
   const temporary = new URL('github-contributions.json.next', directory);
   await mkdir(directory, { recursive: true });
   await writeFile(temporary, `${JSON.stringify(snapshot, null, 2)}\n`, 'utf8');
