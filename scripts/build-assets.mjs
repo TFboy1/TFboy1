@@ -1,311 +1,160 @@
-import { mkdir, readFile, writeFile } from 'node:fs/promises';
-import { createProfileArtwork } from './profile-artwork.mjs';
+import { mkdir, readFile, writeFile, unlink, rmdir } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
+import { createProfileArtwork } from './profile-artwork.mjs';
 
-// All artwork is self-contained: no scripts, remote fonts, or embedded HTML.
-// Keep generated SVGs in Git so GitHub can display them directly in the README.
-const WIDTH = 1120;
-const theme = {
-  background: '#080e17',
-  line: '#203846',
-  accent: '#74f8ce',
-  ice: '#d6fff2',
-  text: '#edf7f7',
-  muted: '#91a9b8',
-};
-
+// Self-contained vector artwork, without remote fonts, images or scripts.
+const theme = { background: '#0b1830', text: '#eaf4ff', muted: '#91abc8', accent: '#f8ce79' };
 function escapeXml(value) {
-  return String(value).replace(/[&<>"']/g, (character) => ({
-    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&apos;',
-  })[character]);
+  return String(value).replace(/[&<>"']/g, character => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&apos;' })[character]);
 }
-
 function text(x, y, value, size = 16, fill = theme.text, attributes = '') {
   return `<text x="${x}" y="${y}" font-size="${size}" fill="${fill}" ${attributes}>${escapeXml(value)}</text>`;
 }
-
-function seededRandom(seed) {
-  let state = seed >>> 0;
-  return () => {
-    state = (Math.imul(state, 1664525) + 1013904223) >>> 0;
-    return state / 4294967296;
-  };
-}
-
-function stars(height, count = 72, seed = 27, width = WIDTH) {
-  const random = seededRandom(seed);
-  return Array.from({ length: count }, (_, index) => {
-    const x = (20 + random() * (width - 40)).toFixed(1);
-    const y = (18 + random() * (height - 36)).toFixed(1);
-    const radius = (0.45 + random() * 1.3).toFixed(2);
-    const opacity = (0.15 + random() * 0.5).toFixed(2);
-    const animated = index % 5 === 0;
-    return `<circle cx="${x}" cy="${y}" r="${radius}" fill="${index % 4 === 0 ? theme.accent : theme.text}" opacity="${opacity}"${animated ? ` class="twinkle" style="animation-delay:-${(random() * 7).toFixed(2)}s"` : ''}/>`;
-  }).join('\n');
-}
-
-function ticks(radius, count = 72) {
-  return Array.from({ length: count }, (_, index) => {
-    const angle = index * Math.PI * 2 / count;
-    const inner = radius - (index % 6 === 0 ? 12 : 4);
-    return `<path d="M${(Math.cos(angle) * inner).toFixed(2)} ${(Math.sin(angle) * inner).toFixed(2)}L${(Math.cos(angle) * radius).toFixed(2)} ${(Math.sin(angle) * radius).toFixed(2)}"/>`;
-  }).join('\n');
-}
-
-function cat(scale = 1) {
-  return `<g transform="scale(${scale})">
-    <path d="M-68-17L-82-94L-22-53Q0-61 22-53L82-94L68-17Q84 20 59 53Q31 76 0 76Q-31 76-59 53Q-84 20-68-17Z" fill="url(#glass)" stroke="url(#metal)" stroke-width="2.4"/>
-    <g fill="none" stroke="${theme.accent}" stroke-linecap="round" stroke-linejoin="round" filter="url(#glow)">
-      <path d="M-59-35L-64-65L-39-48M59-35L64-65L39-48" opacity=".65" stroke-width="1.5"/>
-      <g class="eyes" stroke-width="3.5">
-        <path d="M-43-9L-23 1L-42 10M43-9L23 1L42 10"/>
-      </g>
-      <path d="M-5 23L0 27L5 23M0 27V34M0 34Q-10 42-17 34M0 34Q10 42 17 34" stroke-width="2"/>
-      <path d="M-54 22L-92 16M-54 32L-96 34M54 22L92 16M54 32L96 34" opacity=".55" stroke-width="1.4"/>
-    </g>
-    <path d="M-40 54Q0 70 40 54" fill="none" stroke="${theme.ice}" stroke-opacity=".18"/>
-  </g>`;
-}
-
-const motionCss = `
-  text { font-family: 'Trebuchet MS', 'Segoe UI', 'Microsoft YaHei', sans-serif; }
-  .mono, .mono text { font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', monospace; }
-  .display { font-family: 'Arial Black', 'Segoe UI', sans-serif; font-weight: 900; letter-spacing: -7px; }
-  .spin, .reverse, .orbit { transform-box: fill-box; transform-origin: center; }
-  .spin { animation: rotate 38s linear infinite; }
-  .reverse { animation: rotate 54s linear infinite reverse; }
-  .orbit { animation: rotate 16s linear infinite; }
-  .float { animation: float 7s ease-in-out infinite; }
-  .breathe { animation: breathe 5s ease-in-out infinite; }
-  .twinkle { animation: twinkle 5s ease-in-out infinite; }
-  .signal { animation: signal 3s ease-in-out infinite; }
-  .eyes { animation: eyes 8s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
-  .flow { stroke-dasharray: 12 88; animation: flow 3.2s linear infinite; }
-  .flow-slow { stroke-dasharray: 4 96; animation: flow 6s linear infinite; }
-  .sweep { animation: sweep 9s ease-in-out infinite; }
-  .node-halo { animation: node 6.4s ease-in-out infinite; }
-  .rise { animation: rise 1.2s cubic-bezier(.2,.7,.2,1) both; }
-  @keyframes rotate { to { transform: rotate(360deg); } }
-  @keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-9px); } }
-  @keyframes breathe { 0%,100% { opacity:.36; } 50% { opacity:.8; } }
-  @keyframes twinkle { 0%,100% { opacity:.18; } 50% { opacity:.85; } }
-  @keyframes signal { 0%,100% { opacity:.35; } 50% { opacity:1; } }
-  @keyframes eyes { 0%,43%,47%,100% { transform:scaleY(1); } 45% { transform:scaleY(.12); } }
-  @keyframes flow { to { stroke-dashoffset:-100; } }
-  @keyframes sweep { 0%,35% { transform:translateX(-360px); opacity:0; } 42% { opacity:.7; } 70%,100% { transform:translateX(900px); opacity:0; } }
-  @keyframes node { 0%,15%,65%,100% { opacity:.12; } 28%,45% { opacity:.95; } }
-  @keyframes rise { from { opacity:0; transform:translateY(14px); } to { opacity:1; transform:translateY(0); } }
-  @media (prefers-reduced-motion: reduce) {
-    *, *::before, *::after { animation:none !important; }
-    .rise { opacity:1; }
-    .sweep { display:none; }
-  }
-`;
-
-function svg(height, title, description, content, extraDefs = '', width = WIDTH) {
+function svg(height, title, description, content, extraDefs = '', width = 1120) {
   return `<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" fill="none" role="img" aria-labelledby="title description">
-  <title id="title">${escapeXml(title)}</title>
-  <desc id="description">${escapeXml(description)}</desc>
-  <defs>
-    <linearGradient id="background" x1="0" y1="0" x2="${width}" y2="${height}" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#0c1722"/><stop offset=".5" stop-color="${theme.background}"/><stop offset="1" stop-color="#10242a"/>
-    </linearGradient>
-    <linearGradient id="metal" x1="0" y1="0" x2="1" y2="1">
-      <stop stop-color="${theme.ice}"/><stop offset=".45" stop-color="${theme.accent}"/><stop offset="1" stop-color="#259b88"/>
-    </linearGradient>
-    <linearGradient id="glass" x1="0" y1="0" x2="1" y2="1">
-      <stop stop-color="#203c45" stop-opacity=".85"/><stop offset=".55" stop-color="#0c1c27" stop-opacity=".95"/><stop offset="1" stop-color="#152e32"/>
-    </linearGradient>
-    <linearGradient id="fade-line"><stop stop-color="${theme.accent}" stop-opacity="0"/><stop offset=".5" stop-color="${theme.accent}"/><stop offset="1" stop-color="${theme.accent}" stop-opacity="0"/></linearGradient>
-    <linearGradient id="sheen"><stop stop-color="white" stop-opacity="0"/><stop offset=".5" stop-color="white" stop-opacity=".85"/><stop offset="1" stop-color="white" stop-opacity="0"/></linearGradient>
-    <radialGradient id="aura"><stop stop-color="${theme.accent}" stop-opacity=".2"/><stop offset=".45" stop-color="#2da78f" stop-opacity=".09"/><stop offset="1" stop-color="${theme.accent}" stop-opacity="0"/></radialGradient>
-    <pattern id="grid" width="48" height="48" patternUnits="userSpaceOnUse"><path d="M48 0H0V48" stroke="${theme.line}" stroke-opacity=".3" stroke-width=".6"/></pattern>
-    <pattern id="dust" width="7" height="7" patternUnits="userSpaceOnUse"><circle cx="1" cy="1" r=".45" fill="white" opacity=".035"/><circle cx="5" cy="4" r=".35" fill="white" opacity=".025"/></pattern>
-    <filter id="glow" x="-70%" y="-70%" width="240%" height="240%" color-interpolation-filters="sRGB"><feGaussianBlur stdDeviation="3"/><feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge></filter>
-    <filter id="soft-glow" x="-100%" y="-100%" width="300%" height="300%" color-interpolation-filters="sRGB"><feGaussianBlur stdDeviation="12"/></filter>
-    <clipPath id="frame"><rect width="${width}" height="${height}" rx="24"/></clipPath>
-    ${extraDefs}
-  </defs>
-  <style><![CDATA[${motionCss}]]></style>
-  <g clip-path="url(#frame)">
-    <rect width="${width}" height="${height}" fill="url(#background)"/>
-    ${content}
-    <rect width="${width}" height="${height}" fill="url(#dust)" pointer-events="none"/>
-  </g>
-  <rect x=".5" y=".5" width="${width - 1}" height="${height - 1}" rx="23.5" stroke="#9be7d8" stroke-opacity=".14"/>
-</svg>
-`;
+<title id="title">${escapeXml(title)}</title><desc id="description">${escapeXml(description)}</desc>
+<defs>
+<linearGradient id="background" x2="1" y2="1"><stop stop-color="#142e51"/><stop offset=".55" stop-color="#0b1830"/><stop offset="1" stop-color="#22244c"/></linearGradient>
+<filter id="glow" x="-60%" y="-60%" width="220%" height="220%" color-interpolation-filters="sRGB"><feGaussianBlur stdDeviation="2.5"/><feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+<clipPath id="frame"><rect width="${width}" height="${height}" rx="14"/></clipPath>
+${extraDefs}
+</defs>
+<style><![CDATA[
+text{font-family:'Segoe UI','Microsoft YaHei',sans-serif}.mono{font-family:Consolas,'Liberation Mono',monospace}
+@media(prefers-reduced-motion:reduce){*{animation:none!important}.signature{opacity:1!important}.brush{stroke-dashoffset:0!important}.meteor,.arrival,.spark,.pigment-light,.snake-tail,.snake-head{display:none!important}.snake-food{opacity:1!important}}
+]]></style>
+<g clip-path="url(#frame)"><rect width="${width}" height="${height}" fill="url(#background)"/>${content}</g>
+<rect x=".5" y=".5" width="${width - 1}" height="${height - 1}" rx="13.5" stroke="#d4b879" stroke-opacity=".18"/>
+</svg>\n`;
 }
 
-function heroMobile() {
+// Hand-lettered silhouettes and broad writing guides are separate. The reveal
+// brush uncovers the tapered contours rather than drawing a constant-width font.
+const letters = [
+  { name: 'T',
+    ink: 'M17 56C53 22 140 15 213 25L226 15Q228 44 191 50C130 36 69 44 27 67ZM128 41C120 93 98 142 71 181C60 199 43 208 29 200C17 193 22 174 42 156C26 182 29 190 44 185C64 172 76 113 99 55Z',
+    guide: 'M20 56C71 23 156 28 216 33M116 44C92 125 62 215 30 190Q15 178 39 161' },
+  { name: 'F',
+    ink: 'M271 29C264 58 252 97 240 127C220 178 205 197 180 189C170 180 176 160 190 151C184 169 185 178 197 171C209 157 232 72 246 40ZM237 42C286 9 335 15 373 24L369 38C329 32 286 32 241 58ZM225 98C261 73 300 72 326 81L316 97C282 87 256 91 220 112Z',
+    guide: 'M241 48C286 21 339 23 370 30M259 36C237 109 212 206 181 175M227 102Q276 75 322 88' },
+  { name: 'B',
+    ink: 'M420 27C408 69 389 128 372 174L349 190C368 130 384 69 397 38ZM388 45C432 7 493 16 485 52C481 73 461 87 431 97C470 90 497 107 478 141C457 181 408 203 365 182L373 167C412 176 450 151 458 131C470 105 438 105 397 113L405 91C442 83 467 64 465 47C464 30 431 30 393 59Z',
+    guide: 'M410 32L361 181M391 49C451 9 502 40 452 83L405 103C492 81 494 140 446 164Q406 190 369 176' },
+  { name: 'O',
+    ink: 'M516 162C493 127 513 62 555 31C594 3 642 18 643 57C645 96 607 157 567 179C543 192 525 187 516 162ZM533 154C544 178 573 155 599 121C626 86 638 39 610 34C578 26 552 59 538 91C527 118 525 139 533 154Z',
+    guide: 'M530 171C504 132 531 48 578 28C630 5 654 48 622 106C595 151 553 193 530 171' },
+  { name: 'Y',
+    ink: 'M672 36C663 66 652 103 666 115C679 125 715 85 750 32L769 25C743 74 713 119 687 142C662 162 641 144 643 120C644 95 655 58 657 45ZM754 61C741 108 720 160 686 205C666 230 632 230 619 211C604 189 631 158 668 148C640 164 618 190 637 204C653 215 674 191 689 166C712 128 729 84 736 65Z',
+    guide: 'M665 38C637 116 646 168 698 116Q730 83 759 29M746 65C720 146 678 240 631 212C611 200 619 169 665 152' },
+];
+// Ascending hairline joins carry each cursive letter into the next one.
+const joins = [
+  { ink: 'M42 185C84 187 134 163 162 136Q191 100 234 103L229 110Q193 108 169 143C130 184 74 200 42 191Z', guide: 'M40 189C120 193 168 109 232 106' },
+  { ink: 'M189 178C233 195 278 144 309 113Q337 85 393 91L389 97Q345 94 318 120C277 165 230 205 190 186Z', guide: 'M189 182C238 200 288 142 313 116Q342 89 391 95' },
+  { ink: 'M383 175C434 204 485 173 516 139L525 141C482 189 427 205 385 183Z', guide: 'M380 179Q450 211 522 139' },
+  { ink: 'M549 174C583 185 621 169 649 140L660 131L666 135C629 178 585 196 551 181Z', guide: 'M550 177Q607 200 664 132' },
+];
+for (const [index, join] of joins.entries()) {
+  letters[index].ink += join.ink;
+  letters[index].guide += join.guide;
+}
+function letterPaths(letter, attributes = '') {
+  // Keep O's negative-space counter; separate overlapping brush strokes so
+  // their intersections remain painted instead of becoming even-odd holes.
+  const strokes = letter.ink.match(/M[^M]*/g);
+  const contours = letter.name === 'O' ? [strokes.slice(0, 2).join(''), ...strokes.slice(2)] : strokes;
+  return contours.map((d, index) => `<path d="${d}" ${letter.name === 'O' && index === 0 ? 'fill-rule="evenodd" clip-rule="evenodd"' : ''} ${attributes}/>`).join('');
+}
+const flourish = 'M29 222C242 179 500 213 712 192C760 188 792 175 824 162C785 191 756 208 712 211C445 229 249 200 39 230Z';
+function hero(mobile = false) {
+  const width = mobile ? 600 : 1120;
+  const height = mobile ? 430 : 380;
+  const signatureTransform = mobile ? 'translate(22 128) scale(.66)' : 'translate(68 69) scale(1.19)';
+  const brushMasks = letters.map((letter, index) => `<mask id="write-${index}" maskUnits="userSpaceOnUse" x="0" y="0" width="850" height="250"><path class="brush brush-${index}" d="${letter.guide}" pathLength="100" stroke="white" stroke-width="58" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="100" stroke-dashoffset="0"/></mask>`).join('');
+  const writingCss = letters.map((_, index) => {
+    const start = ((2 + index * .58) / 12 * 100).toFixed(3);
+    const end = ((2.56 + index * .58) / 12 * 100).toFixed(3);
+    return `.brush-${index}{animation:write-${index} 12s linear infinite}@keyframes write-${index}{0%,${start}%{stroke-dashoffset:100}${end}%,100%{stroke-dashoffset:0}}`;
+  }).join('');
+  const dryBrush = ['M112 66L87 135', 'M86 139L76 160', 'M254 53L234 112', 'M240 99Q283 79 303 88', 'M404 46L377 134', 'M431 35Q457 26 468 38', 'M463 120Q457 146 418 166', 'M529 111Q520 136 532 156', 'M610 32Q636 43 621 81', 'M660 73Q649 107 657 121', 'M736 89L717 137', 'M690 186Q659 224 637 212'];
+  const sparklePositions = [[50, 18, 5], [205, 79, 3], [287, 15, 4], [379, 156, 3], [478, 70, 4], [587, 15, 5], [674, 173, 3], [793, 108, 5]];
+  const stars = Array.from({ length: mobile ? 36 : 58 }, (_, index) => `<circle cx="${(index * 179 + 47) % 1080 + 20}" cy="${(index * 83 + 31) % 330 + 20}" r="${index % 7 === 0 ? 1.2 : .65}" fill="#c7e7ff" opacity="${index % 3 === 0 ? .5 : .22}"/>`).join('');
+  const defs = `
+<linearGradient id="paint" gradientUnits="userSpaceOnUse" x1="20" y1="38" x2="790" y2="173"><stop stop-color="#62e7b3"/><stop offset=".24" stop-color="#60bffa"/><stop offset=".46" stop-color="#b888f3"/><stop offset=".69" stop-color="#ffd176"/><stop offset="1" stop-color="#ff8195"/></linearGradient>
+<linearGradient id="cloud" x2="0" y2="1"><stop stop-color="#8dbfe4" stop-opacity=".14"/><stop offset="1" stop-color="#315181" stop-opacity="0"/></linearGradient>
+<linearGradient id="comet-blue"><stop stop-color="#60bffa" stop-opacity="0"/><stop offset=".65" stop-color="#8cd8ff" stop-opacity=".5"/><stop offset="1" stop-color="#e6f6ff"/></linearGradient>
+<linearGradient id="comet-gold"><stop stop-color="#edb764" stop-opacity="0"/><stop offset=".65" stop-color="#ffd584" stop-opacity=".8"/><stop offset="1" stop-color="#fff8d9"/></linearGradient>
+<radialGradient id="arrival-light"><stop stop-color="#fff4ce" stop-opacity=".75"/><stop offset=".22" stop-color="#ffce7c" stop-opacity=".35"/><stop offset="1" stop-color="#f0b876" stop-opacity="0"/></radialGradient>
+<linearGradient id="pigment-sheen"><stop stop-color="white" stop-opacity="0"/><stop offset=".5" stop-color="#fff8e9" stop-opacity=".7"/><stop offset="1" stop-color="white" stop-opacity="0"/></linearGradient>
+${brushMasks}
+<mask id="dry-brush" maskUnits="userSpaceOnUse" x="0" y="0" width="850" height="250"><rect width="850" height="250" fill="white"/><g stroke="black" stroke-width="1.3" stroke-linecap="round">${dryBrush.map(d => `<path d="${d}"/>`).join('')}</g></mask>
+<clipPath id="signature-clip">${letters.map(letter => letterPaths(letter)).join('')}</clipPath>
+<style><![CDATA[
+.signature{animation:ink-cycle 12s linear infinite}.meteor{opacity:0;animation:meteor 12s linear infinite}.comet-gold{animation:comet-color 12s linear infinite}.arrival{opacity:0;animation:arrival 12s ease-out infinite}.spark{opacity:0;animation:spark 12s ease-in-out infinite;transform-box:fill-box;transform-origin:center}.flourish{animation:flourish 12s ease-out infinite}.pigment-light{opacity:0;animation:pigment-light 12s ease-in-out infinite}
+${writingCss}
+@keyframes ink-cycle{0%,15%{opacity:0}16.667%,91.667%{opacity:1}100%{opacity:0}}
+@keyframes meteor{0%{opacity:0;transform:translate(-120px,-60px)}2%{opacity:1}14%{opacity:1;transform:translate(640px,210px)}16.667%,100%{opacity:0;transform:translate(720px,238px)}}
+@keyframes comet-color{0%,7%{opacity:0}12%,100%{opacity:1}}
+@keyframes arrival{0%,15%{opacity:0;transform:scale(.75)}18%{opacity:1;transform:scale(1)}31%,100%{opacity:0;transform:scale(1.12)}}
+@keyframes spark{0%,40%{opacity:0;transform:scale(.75)}48%,72%{opacity:.85;transform:scale(1)}59%,83%{opacity:.25;transform:scale(.85)}91%{opacity:.7}100%{opacity:0}}
+@keyframes flourish{0%,39%{opacity:0}42%,100%{opacity:1}}
+@keyframes pigment-light{0%,45%{opacity:0;transform:translateX(-160px)}49%{opacity:.5}70%{opacity:.5;transform:translateX(960px)}74%,100%{opacity:0;transform:translateX(960px)}}
+@media(prefers-reduced-motion:reduce){.flourish{opacity:1!important}}
+]]></style>`;
   const content = `
-    <rect width="600" height="550" fill="url(#grid)" opacity=".35"/>
-    <ellipse cx="465" cy="142" rx="240" ry="245" fill="url(#aura)" class="breathe"/>
-    ${stars(550, 62, 27, 600)}
-    <g transform="translate(454 144)">
-      <g class="reverse" stroke="${theme.accent}" stroke-opacity=".25">${ticks(115, 48)}</g>
-      <g class="spin"><circle r="100" stroke="${theme.accent}" stroke-width="1.5" stroke-dasharray="85 26 12 250"/></g>
-      <g transform="rotate(-28)">
-        <ellipse rx="138" ry="45" stroke="${theme.accent}" stroke-opacity=".22"/>
-        <ellipse rx="138" ry="45" pathLength="100" stroke="${theme.accent}" stroke-width="2" class="flow-slow" filter="url(#glow)"/>
-      </g>
-      <circle r="75" fill="url(#glass)" stroke="${theme.accent}" stroke-opacity=".2"/>
-      <g class="float">${cat(.49)}</g>
-    </g>
-    <path d="M34 38H52M34 38V56" stroke="${theme.accent}" stroke-width="2"/>
-    ${text(64, 50, 'TFBOY1 / CREATIVE ENGINEERING', 11, theme.muted, 'class="mono" letter-spacing="1"')}
-    <rect x="34" y="139" width="215" height="33" rx="4" fill="${theme.accent}" fill-opacity=".07" stroke="${theme.accent}" stroke-opacity=".25"/>
-    <circle cx="50" cy="155" r="3" fill="${theme.accent}" class="signal"/>
-    ${text(65, 160, 'INDEPENDENT BUILDER', 14, theme.accent, 'class="mono" letter-spacing="1"')}
-    ${text(27, 288, 'TFboy1', 119, theme.text, 'class="display rise"')}
-    ${text(34, 342, 'Build tools. Make worlds.', 29, theme.ice, 'font-weight="600" letter-spacing="-.7"')}
-    ${text(34, 382, '让世界更加自动化，也更有趣。', 22, theme.muted)}
-    <path d="M34 416H566" stroke="url(#fade-line)" stroke-opacity=".5"/>
-    ${text(34, 450, 'AI & AUTOMATION  /  GAMES & WORLDS  /  USEFUL APPS', 12, theme.muted, 'class="mono" letter-spacing=".4"')}
-    ${text(34, 506, 'AUTOMATE THE ORDINARY. KEEP CREATING.', 12, theme.accent, 'class="mono" letter-spacing=".5"')}
-  `;
-  return svg(550, 'TFboy1 · Independent Builder', '移动端主视觉：发光猫与旋转星环。让世界更加自动化，也更有趣。', content, '', 600);
-}
-
-function hero() {
-  const wave = Array.from({ length: 20 }, (_, index) => {
-    const y = 317 + index * 6;
-    return `<path d="M-80 ${y}C210 ${y - 92} 387 ${y + 132} 645 ${y - 6}S942 ${y - 126} 1220 ${y - 56}" stroke="${theme.accent}" stroke-opacity="${(0.025 + index * 0.002).toFixed(3)}"/>`;
-  }).join('\n');
-
-  const content = `
-    <rect width="1120" height="480" fill="url(#grid)" opacity=".35"/>
-    <ellipse cx="854" cy="245" rx="345" ry="305" fill="url(#aura)" class="breathe"/>
-    <ellipse cx="118" cy="460" rx="340" ry="160" fill="url(#aura)" opacity=".4"/>
-    ${stars(480, 92)}
-    <g fill="none">${wave}</g>
-    <path d="M650 40H1024L1072 88V358L1024 406H692" stroke="${theme.line}" stroke-opacity=".7"/>
-    <path d="M652 40H729M1072 294V358L1024 406H970" stroke="${theme.accent}" stroke-opacity=".5"/>
-    <g transform="translate(850 232)">
-      <circle r="210" fill="url(#aura)"/>
-      <g class="reverse" stroke="${theme.accent}" stroke-opacity=".24" stroke-width="1">${ticks(188)}</g>
-      <circle r="171" stroke="${theme.accent}" stroke-opacity=".12"/>
-      <g class="spin" stroke="url(#metal)" stroke-width="2">
-        <circle r="153" stroke-dasharray="125 32 18 50 80 656"/>
-        <circle r="166" stroke-width=".7" stroke-dasharray="4 32" opacity=".6"/>
-      </g>
-      <g transform="rotate(-28)">
-        <ellipse rx="222" ry="62" stroke="${theme.accent}" stroke-opacity=".2"/>
-        <ellipse rx="222" ry="62" pathLength="100" class="flow-slow" stroke="${theme.accent}" stroke-width="2" filter="url(#glow)"/>
-      </g>
-      <g transform="rotate(32)">
-        <ellipse rx="207" ry="73" stroke="${theme.ice}" stroke-opacity=".1"/>
-        <ellipse rx="207" ry="73" pathLength="100" class="flow-slow" style="animation-delay:-3s" stroke="${theme.ice}" stroke-width="1.5" filter="url(#glow)"/>
-      </g>
-      <g class="orbit">
-        <circle r="136" stroke="${theme.accent}" stroke-opacity=".08"/>
-        <circle cx="136" r="4" fill="${theme.accent}" filter="url(#glow)"/>
-        <circle cx="-136" r="2" fill="${theme.ice}"/>
-      </g>
-      <circle r="113" fill="url(#glass)" stroke="${theme.accent}" stroke-opacity=".18"/>
-      <circle r="106" stroke="${theme.ice}" stroke-opacity=".08"/>
-      <g class="float">${cat(.87)}</g>
-    </g>
-    <g class="rise">
-      <path d="M54 54H72M54 54V72" stroke="${theme.accent}" stroke-width="2"/>
-      ${text(86, 66, 'TFBOY1 / CREATIVE ENGINEERING', 12, theme.muted, 'class="mono" letter-spacing="2"')}
-      <rect x="58" y="108" width="189" height="29" rx="4" fill="${theme.accent}" fill-opacity=".08" stroke="${theme.accent}" stroke-opacity=".25"/>
-      <circle cx="72" cy="122" r="3" fill="${theme.accent}" class="signal"/>
-      ${text(85, 126, 'INDEPENDENT BUILDER', 12, theme.accent, 'class="mono" letter-spacing="1.2"')}
-      ${text(53, 247, 'TFboy1', 118, theme.text, 'class="display"')}
-      <g clip-path="url(#title-mask)"><rect x="0" y="150" width="155" height="110" fill="url(#sheen)" class="sweep" transform="rotate(-12 70 210)"/></g>
-      ${text(60, 292, 'Build tools. Make worlds.', 27, theme.ice, 'font-weight="600" letter-spacing="-.7"')}
-      ${text(60, 328, '让世界更加自动化，也更有趣。', 17, theme.muted)}
-    </g>
-    <path d="M60 370H595" stroke="url(#fade-line)" stroke-opacity=".6"/>
-    <g class="mono" fill="${theme.muted}" font-size="11" letter-spacing="1.6">
-      ${text(60, 398, 'AI & AUTOMATION', 11, theme.muted, 'class="mono" letter-spacing="1.6"')}
-      <circle cx="194" cy="394" r="1.6" fill="${theme.accent}"/>
-      ${text(211, 398, 'GAMES & WORLDS', 11, theme.muted, 'class="mono" letter-spacing="1.6"')}
-      <circle cx="332" cy="394" r="1.6" fill="${theme.accent}"/>
-      ${text(349, 398, 'USEFUL APPS', 11, theme.muted, 'class="mono" letter-spacing="1.6"')}
-    </g>
-    ${text(60, 448, 'AUTOMATE THE ORDINARY. KEEP CREATING.', 11, theme.accent, 'class="mono" letter-spacing="1.5"')}
-    ${text(850, 448, 'AUTOMATE · CREATE · PLAY', 11, theme.muted, 'class="mono" text-anchor="middle" letter-spacing="3"')}
-  `;
-  return svg(480, 'TFboy1 · Independent Builder', '深空粒子、旋转轨道与发光猫标识。Build tools. Make worlds. 让世界更加自动化，也更有趣。', content,
-    `<clipPath id="title-mask">${text(53, 247, 'TFboy1', 118, '#fff', 'class="display"')}</clipPath>`);
-}
-
-function divider() {
-  return `<?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="32" viewBox="0 0 1120 32" fill="none" role="img" aria-label="流动的薄荷绿分隔线">
-  <defs><linearGradient id="line"><stop stop-color="#74f8ce" stop-opacity="0"/><stop offset=".5" stop-color="#74f8ce" stop-opacity=".5"/><stop offset="1" stop-color="#74f8ce" stop-opacity="0"/></linearGradient></defs>
-  <style><![CDATA[
-    .spark { animation:travel 8s ease-in-out infinite; }
-    @keyframes travel { 0% { transform:translateX(-450px); opacity:0; } 20%,80% { opacity:.8; } 100% { transform:translateX(450px); opacity:0; } }
-    @media (prefers-reduced-motion:reduce) { .spark { animation:none; opacity:.4; } }
-  ]]></style>
-  <path d="M40 16H1080" stroke="url(#line)"/>
-  <path d="M550 16L560 10L570 16L560 22Z" fill="#74f8ce" fill-opacity=".12" stroke="#74f8ce" stroke-opacity=".5"/>
-  <circle cx="560" cy="16" r="2" fill="#d6fff2" class="spark"/>
-</svg>
-`;
-}
-
-function footer(mobile = false) {
-  const width = mobile ? 600 : WIDTH;
-  const height = mobile ? 290 : 240;
-  const center = width / 2;
-  const ribbons = Array.from({ length: 15 }, (_, index) => {
-    const y = height - 34 + index * 5;
-    return `<path d="M-50 ${y}Q${center} ${y - 170} ${width + 50} ${y}" stroke="${theme.accent}" stroke-opacity="${(0.028 + index * .003).toFixed(3)}"/>`;
-  }).join('\n');
-  const content = `
-    <ellipse cx="${center}" cy="${height + 60}" rx="${width / 1.4}" ry="260" fill="url(#aura)" class="breathe"/>
-    ${stars(height, mobile ? 30 : 50, 91, width)}
-    ${ribbons}
-    <path d="M${center - 35} 38H${center - 12}M${center + 12} 38H${center + 35}" stroke="${theme.accent}" stroke-opacity=".5"/>
-    <path d="M${center} 32L${center + 6} 38L${center} 44L${center - 6} 38Z" stroke="${theme.accent}" class="signal"/>
-    ${mobile
-      ? `${text(center, 108, 'Good ideas deserve', 34, theme.text, 'text-anchor="middle" font-weight="700" letter-spacing="-1"')}
-         ${text(center, 151, 'real software.', 34, theme.ice, 'text-anchor="middle" font-weight="700" letter-spacing="-1"')}
-         ${text(center, 197, 'Build useful things. Make room for curiosity.', 18, theme.muted, 'text-anchor="middle"')}
-         ${text(center, 251, 'TFBOY1 / KEEP BUILDING', 12, theme.accent, 'class="mono" text-anchor="middle" letter-spacing="2"')}`
-      : `${text(center, 111, 'Good ideas deserve real software.', 37, theme.text, 'text-anchor="middle" font-weight="700" letter-spacing="-1.3"')}
-         ${text(center, 150, 'Build useful things. Make room for curiosity.', 17, theme.muted, 'text-anchor="middle"')}
-         ${text(center, 209, 'TFBOY1 / KEEP BUILDING', 11, theme.accent, 'class="mono" text-anchor="middle" letter-spacing="3"')}`}
-  `;
-  return svg(height, 'Good ideas deserve real software.', '好的想法，值得变成真实的软件。Build useful things. Make room for curiosity.', content, '', width);
+<g transform="scale(${width / 1120} ${height / 380})">
+<path d="M-60 87C70 31 201 64 283 35S447 17 540 49C349 85 170 120-60 158Z" fill="url(#cloud)"/>
+<path d="M642 8C773 68 828 24 925 66S1105 24 1180 72V174C1003 117 807 144 642 8Z" fill="url(#cloud)"/>
+<path d="M-90 312C79 247 167 289 307 261S483 294 595 310C336 367 147 347-90 400Z" fill="url(#cloud)"/>
+<path d="M674 313C825 254 920 314 1044 271L1190 229V410H674Z" fill="url(#cloud)"/>
+<path d="M-30 170C266 38 566 33 935 89M687 335Q908 262 1145 289" stroke="#a8d6ed" stroke-opacity=".08"/>
+${stars}
+<g class="meteor"><path d="M-370-139Q-185-82 0 0Q-175-55-370-139Z" fill="url(#comet-blue)"/><path d="M-330-126Q-155-70 0 0Q-139-42-330-126Z" fill="url(#comet-gold)" class="comet-gold"/><path d="M-260-99L0 0" stroke="#e0f5ff" stroke-width="1.4"/><path d="M0-12L3-3L12 0L3 3L0 12L-3 3L-12 0L-3-3Z" fill="#fff4d0" filter="url(#glow)"/></g>
+<g transform="translate(640 190)"><g class="arrival"><ellipse rx="390" ry="235" fill="url(#arrival-light)"/><path d="M-430 0H430M0-125V125M-125-105L125 105M-125 105L125-105" stroke="#fff2cf" stroke-opacity=".65" stroke-width="1"/></g></g>
+</g>
+${text(mobile ? 28 : 38, mobile ? 39 : 32, 'TFBOY / INDEPENDENT BUILDER', mobile ? 11 : 12, '#a9c5df', 'class="mono" letter-spacing="1.7"')}
+<g transform="${signatureTransform}" aria-label="TFBOY">
+<g class="signature" mask="url(#dry-brush)">
+${letters.map((letter, index) => `<g mask="url(#write-${index})">${letterPaths(letter, 'fill="url(#paint)"')}</g>`).join('')}
+<path class="flourish" d="${flourish}" fill="url(#paint)" opacity=".8"/>
+<g clip-path="url(#signature-clip)"><rect class="pigment-light" x="-130" y="0" width="130" height="250" fill="url(#pigment-sheen)"/></g>
+</g>
+<g fill="url(#paint)" class="signature">${[[25, 80, 2], [13, 94, 1.2], [176, 204, 2.6], [301, 42, 1.7], [495, 190, 1.3], [755, 144, 2.3], [793, 141, 1.3], [810, 135, .8]].map(([x, y, r]) => `<circle cx="${x}" cy="${y}" r="${r}"/>`).join('')}</g>
+<g fill="#ffedbc">${sparklePositions.map(([x, y, r]) => `<g transform="translate(${x} ${y})"><path class="spark" d="M0-${r * 2}L${r / 3}-${r / 3}L${r * 2} 0L${r / 3} ${r / 3}L0 ${r * 2}L-${r / 3} ${r / 3}L-${r * 2} 0L-${r / 3}-${r / 3}Z"/></g>`).join('')}</g>
+</g>
+${text(width / 2, mobile ? 329 : 359, '让世界更加自动化，也更有趣。', mobile ? 18 : 15, '#c0d4e8', 'text-anchor="middle" letter-spacing="2"')}
+${mobile ? text(300, 383, 'AI TOOLS · GAMES · USEFUL APPS', 11, '#8faac7', 'class="mono" text-anchor="middle" letter-spacing="1"') : ''}`;
+  return svg(height, 'TFBOY · 五彩草书与金色流星', '苍蓝云层中的流星由青蓝转成金色，金辉展开后，青绿、蓝、紫、金黄和珊瑚红的颜料逐笔写出草书 TFBOY。', content, defs, width);
 }
 
 const outputDirectory = new URL('../assets/', import.meta.url);
-const { projects } = JSON.parse(await readFile(new URL('../data/projects.json', import.meta.url), 'utf8'));
+const { projects, pinnedOrder } = JSON.parse(await readFile(new URL('../data/projects.json', import.meta.url), 'utf8'));
 const calendar = JSON.parse(await readFile(new URL('../data/github-contributions.json', import.meta.url), 'utf8'));
 const readmePath = new URL('../README.md', import.meta.url);
 const readme = await readFile(readmePath, 'utf8');
-if (!readme.includes('<!-- PROJECTS:START -->') || !readme.includes('<!-- PROJECTS:END -->')) {
-  throw new Error('README 缺少作品展示区构建标记。');
-}
-if (new Set(projects.map(project => project.id)).size !== projects.length || projects.some(project => !/^[a-z0-9-]+$/.test(project.id))) {
-  throw new Error('项目 ID 必须唯一，且只能包含小写字母、数字和短横线。');
-}
-const profileArtwork = createProfileArtwork({ svg, text, theme, stars, escapeXml });
+if (!readme.includes('<!-- PROJECTS:START -->') || !readme.includes('<!-- PROJECTS:END -->')) throw new Error('README 缺少作品展示区构建标记。');
+if (new Set(projects.map(project => project.id)).size !== projects.length || projects.some(project => !/^[a-z0-9-]+$/.test(project.id))) throw new Error('项目 ID 必须唯一，且只能包含小写字母、数字和短横线。');
+const profileArtwork = createProfileArtwork({ svg, text, theme, escapeXml });
+const projectSection = profileArtwork.projectSection(projects, pinnedOrder);
 const artwork = [
-  ['hero.svg', hero()],
-  ['hero-mobile.svg', heroMobile()],
-  ['divider.svg', divider()],
-  ['footer.svg', footer()],
-  ['footer-mobile.svg', footer(true)],
-  ['contribution-activity.svg', profileArtwork.activity(calendar)],
-  ['contribution-activity-mobile.svg', profileArtwork.activity(calendar, true)],
+  ['hero.svg', hero()], ['hero-mobile.svg', hero(true)],
   ['github-contribution-grid-snake.svg', profileArtwork.snake(calendar, false)],
   ['github-contribution-grid-snake-dark.svg', profileArtwork.snake(calendar, true)],
-  ...projects.map((project, index) => ['projects/' + project.id + '.svg', profileArtwork.projectCard(project, index)]),
 ];
-
+const desktopBytes = Buffer.byteLength(artwork[0][1], 'utf8') + Math.max(...artwork.slice(2).map(([, content]) => Buffer.byteLength(content, 'utf8')));
+if (desktopBytes > 100 * 1024) throw new Error(`桌面图片组合超出 100 KiB：${desktopBytes} bytes`);
 await mkdir(outputDirectory, { recursive: true });
-await mkdir(new URL('projects/', outputDirectory), { recursive: true });
 for (const [name, content] of artwork) {
-  await writeFile(new URL(name, outputDirectory), content, { encoding: 'utf8' });
-  console.log('Built ' + name + ' (' + (Buffer.byteLength(content, 'utf8') / 1024).toFixed(1) + ' KB)');
+  await writeFile(new URL(name, outputDirectory), content, 'utf8');
+  console.log(`Built ${name} (${(Buffer.byteLength(content, 'utf8') / 1024).toFixed(1)} KiB)`);
 }
-const updatedReadme = readme.replace(/(<!-- PROJECTS:START -->)[\s\S]*?(<!-- PROJECTS:END -->)/, (_, start, end) => start + '\n\n' + profileArtwork.projectSection(projects) + '\n\n' + end);
+// Remove only known outputs of the previous generator, never unrelated assets.
+const obsolete = ['divider.svg', 'footer.svg', 'footer-mobile.svg', 'contribution-activity.svg', 'contribution-activity-mobile.svg', ...projects.map(project => `projects/${project.id}.svg`)];
+for (const name of obsolete) {
+  await unlink(new URL(name, outputDirectory)).catch(error => { if (error.code !== 'ENOENT') throw error; });
+}
+await rmdir(new URL('projects/', outputDirectory)).catch(error => { if (!['ENOENT', 'ENOTEMPTY', 'EEXIST'].includes(error.code)) throw error; });
+const updatedReadme = readme.replace(/(<!-- PROJECTS:START -->)[\s\S]*?(<!-- PROJECTS:END -->)/, (_, start, end) => `${start}\n\n${projectSection}\n\n${end}`);
 if (updatedReadme !== readme) await writeFile(readmePath, updatedReadme, 'utf8');
-console.log('\nGenerated ' + artwork.length + ' SVG assets in ' + fileURLToPath(outputDirectory));
+console.log(`\nGenerated ${artwork.length} SVG assets in ${fileURLToPath(outputDirectory)}; desktop pair ${(desktopBytes / 1024).toFixed(1)} KiB`);

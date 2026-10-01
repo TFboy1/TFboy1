@@ -3,6 +3,13 @@
     "https://tfboyhomepage.netlify.app/",
     "https://github.com/TFboy1"
   ],
+  "pinnedOrder": [
+    "academic-paper-writer-skills",
+    "chatgpt-share-gate",
+    "oh-my-minimaxh3-director",
+    "dsh-minecraft-ui",
+    "vibe-git"
+  ],
   "projects": [
     {
       "id": "academic-paper-writer-skills",
