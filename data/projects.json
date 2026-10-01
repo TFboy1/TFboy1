@@ -1,0 +1,313 @@
+{
+  "sources": [
+    "https://tfboyhomepage.netlify.app/",
+    "https://github.com/TFboy1"
+  ],
+  "projects": [
+    {
+      "id": "academic-paper-writer-skills",
+      "category": "tools",
+      "title": "论文格式化工具",
+      "headline": "让论文整理成章",
+      "icon": "paper",
+      "description": "辅助论文研究、撰写、排版与文档输出的 Agent Skill，支持结构化流程和学校、会议的格式要求。",
+      "tags": [
+        "AIGC",
+        "论文",
+        "自动化"
+      ],
+      "repo": "https://github.com/TFboy1/academic-paper-writer",
+      "previewUrl": "https://github.com/TFboy1/academic-paper-writer",
+      "download": "",
+      "status": "published",
+      "source": "https://tfboyhomepage.netlify.app/"
+    },
+    {
+      "id": "oh-my-minimaxh3-director",
+      "category": "tools",
+      "title": "oh-my-minimaxh3-director",
+      "headline": "把剧本变成影片",
+      "icon": "film",
+      "description": "MiniMax H3 驱动的全自动 AI 视频导演流水线：自动分镜、批量生成，再由剪映一键拼合。",
+      "tags": [
+        "AIGC",
+        "视频生成",
+        "Codex Skill"
+      ],
+      "repo": "https://github.com/TFboy1/oh-my-minimaxh3-director",
+      "previewUrl": "",
+      "download": "",
+      "status": "published",
+      "source": "https://tfboyhomepage.netlify.app/"
+    },
+    {
+      "id": "vibe-git",
+      "category": "tools",
+      "title": "Vibe-Git",
+      "headline": "让团队决定可追踪",
+      "icon": "collab",
+      "description": "给多人 Codex 开发一条协作协议：队长托管房间，成员在各自的 Git 工作区中提交提案、对齐任务并审核需求变更。",
+      "tags": [
+        "Git",
+        "Codex",
+        "协作协议"
+      ],
+      "repo": "https://github.com/TFboy1/vibe-git",
+      "previewUrl": "https://tfboy1.github.io/vibe-git/",
+      "download": "",
+      "status": "published",
+      "source": "https://github.com/TFboy1/vibe-git"
+    },
+    {
+      "id": "dsh-minecraft-ui",
+      "category": "tools",
+      "title": "DSHcraft · dsh-minecraft-ui",
+      "headline": "让 Agent 工作台可游玩",
+      "icon": "blocks",
+      "description": "把 DeepSeek Harness 的工作空间变成 Minecraft 风格的方块世界，探索体素场景、装备模型并与 Agent 一起工作。",
+      "tags": [
+        "DeepSeek Harness",
+        "Three.js",
+        "Agent UI"
+      ],
+      "repo": "https://github.com/TFboy1/dsh-minecraft-ui",
+      "previewUrl": "",
+      "download": "",
+      "status": "published",
+      "source": "https://github.com/TFboy1/dsh-minecraft-ui"
+    },
+    {
+      "id": "chatgpt-share-gate",
+      "category": "tools",
+      "title": "ChatGPT-Share-Gate",
+      "headline": "每个人，一份会话",
+      "icon": "chat",
+      "description": "通过 Playwright 接管本地已登录的 ChatGPT 浏览器，结合 Telegram 和 Streamlit，为共享使用提供独立会话与请求排队。",
+      "tags": [
+        "Playwright",
+        "Telegram",
+        "Streamlit"
+      ],
+      "repo": "https://github.com/TFboy1/ChatGPT-Share-Gate",
+      "previewUrl": "",
+      "download": "",
+      "status": "published",
+      "source": "https://github.com/TFboy1/ChatGPT-Share-Gate"
+    },
+    {
+      "id": "catch-naiwa",
+      "category": "games",
+      "title": "围住奶蛙",
+      "headline": "把小奶蛙留下来",
+      "icon": "frog",
+      "description": "点一格，放下一点小心意。用蛋糕、奶茶和玩具，留下这只调皮的小奶蛙。",
+      "tags": [
+        "游戏",
+        "解谜",
+        "B站小玩具"
+      ],
+      "repo": "",
+      "previewUrl": "https://www.bilibili.com/toy/catch-naiwa/index.html",
+      "download": "",
+      "status": "published",
+      "source": "https://tfboyhomepage.netlify.app/"
+    },
+    {
+      "id": "plants-vs-zombies-workplace",
+      "category": "games",
+      "title": "植物大战僵尸 · 职场版",
+      "headline": "守住下班自由",
+      "icon": "plant",
+      "description": "在五天十关的办公室里种下植物，守住最后一分钟的下班自由。",
+      "tags": [
+        "游戏",
+        "塔防",
+        "B站小玩具"
+      ],
+      "repo": "",
+      "previewUrl": "https://www.bilibili.com/toy/preview/preview_lGpAC35t/index.html",
+      "download": "",
+      "status": "published",
+      "source": "https://tfboyhomepage.netlify.app/"
+    },
+    {
+      "id": "stellar-alert",
+      "category": "games",
+      "title": "群星警戒",
+      "headline": "写下你的文明史",
+      "icon": "space",
+      "description": "自定义帝国、物种与伦理政体，在实时星海推演中写下独属于你的文明史。",
+      "tags": [
+        "游戏",
+        "太空策略",
+        "B站小玩具"
+      ],
+      "repo": "",
+      "previewUrl": "https://www.bilibili.com/toy/preview/preview_BNSPOAg7/index.html",
+      "download": "",
+      "status": "published",
+      "source": "https://tfboyhomepage.netlify.app/"
+    },
+    {
+      "id": "warchess",
+      "category": "games",
+      "title": "Warchess · 东方战争沙盘",
+      "headline": "落子，也是战术",
+      "icon": "chess",
+      "description": "融合据点争夺、军令资源与增援机制的中国象棋战术对战。",
+      "tags": [
+        "游戏",
+        "策略",
+        "B站小玩具"
+      ],
+      "repo": "",
+      "previewUrl": "https://www.bilibili.com/toy/preview/preview_cJ2s4j5t/index.html",
+      "download": "",
+      "status": "published",
+      "source": "https://tfboyhomepage.netlify.app/"
+    },
+    {
+      "id": "meme-duelist",
+      "category": "games",
+      "title": "梗决斗师",
+      "headline": "盖下陷阱，打出你的梗",
+      "icon": "cards",
+      "description": "盖下陷阱、发动魔法，在复古论坛街机风的热梗卡牌对决中一路闯关。",
+      "tags": [
+        "游戏",
+        "卡牌",
+        "B站小玩具"
+      ],
+      "repo": "",
+      "previewUrl": "https://www.bilibili.com/toy/preview/preview_Lnrx9HhN/index.html",
+      "download": "",
+      "status": "published",
+      "source": "https://tfboyhomepage.netlify.app/"
+    },
+    {
+      "id": "meme-monsters",
+      "category": "games",
+      "title": "梗可梦",
+      "headline": "热梗精灵，冒险出发",
+      "icon": "monster",
+      "description": "五只热梗精灵组成三人小队，闯过三幕回合制肉鸽路线。",
+      "tags": [
+        "游戏",
+        "回合制肉鸽",
+        "B站小玩具"
+      ],
+      "repo": "",
+      "previewUrl": "https://www.bilibili.com/toy/meme_monsters/index.html",
+      "download": "",
+      "status": "published",
+      "source": "https://tfboyhomepage.netlify.app/"
+    },
+    {
+      "id": "cycle-of-realms",
+      "category": "games",
+      "title": "万象轮回",
+      "headline": "穿越位面，写下编年史",
+      "icon": "realm",
+      "description": "从主神空间穿越无限位面，调查、生活、战斗，并写下只属于你的编年史。",
+      "tags": [
+        "游戏",
+        "角色扮演",
+        "B站小玩具"
+      ],
+      "repo": "",
+      "previewUrl": "https://www.bilibili.com/toy/preview/preview_MvGkkxx6/index.html",
+      "download": "",
+      "status": "published",
+      "source": "https://tfboyhomepage.netlify.app/"
+    },
+    {
+      "id": "feed-naiwa",
+      "category": "games",
+      "title": "别饿着奶蛙",
+      "headline": "一根绳，一点小意外",
+      "icon": "rope",
+      "description": "割一根绳，接一段小小的意外。十个绘本物理谜题，二十种奶蛙日常。",
+      "tags": [
+        "游戏",
+        "物理解谜",
+        "B站小玩具"
+      ],
+      "repo": "",
+      "previewUrl": "https://www.bilibili.com/toy/preview/preview_7UwaGRvQ/index.html",
+      "download": "",
+      "status": "published",
+      "source": "https://tfboyhomepage.netlify.app/"
+    },
+    {
+      "id": "autolist",
+      "category": "apps",
+      "title": "AutoList",
+      "headline": "把一天安排明白",
+      "icon": "list",
+      "description": "基于艾森豪威尔四象限的待办 App，支持 AI 自动分类、本地提醒和 Android 桌面小组件。",
+      "tags": [
+        "应用",
+        "待办",
+        "AIGC"
+      ],
+      "repo": "https://github.com/TFboy1/AutoList",
+      "previewUrl": "https://github.com/TFboy1/AutoList",
+      "download": "https://github.com/TFboy1/AutoList/releases/tag/v1.0.1",
+      "status": "published",
+      "source": "https://tfboyhomepage.netlify.app/"
+    },
+    {
+      "id": "wittydiary",
+      "category": "apps",
+      "title": "WittyDiary",
+      "headline": "留下一点今天",
+      "icon": "diary",
+      "description": "AIGC 日记应用，带有类似“死了么”的日常确认功能。",
+      "tags": [
+        "日记",
+        "AIGC",
+        "应用"
+      ],
+      "repo": "",
+      "previewUrl": "https://wittydiary.onrender.com/",
+      "download": "",
+      "status": "published",
+      "source": "https://tfboyhomepage.netlify.app/"
+    },
+    {
+      "id": "miti",
+      "category": "apps",
+      "title": "MITI · 角色人格测试",
+      "headline": "找到你的角色画像",
+      "icon": "personality",
+      "description": "用 Vue + Vite 构建的米哈游角色人格测试：通过五维回答结果，匹配最接近的角色卡。",
+      "tags": [
+        "Vue",
+        "Vite",
+        "人格测试"
+      ],
+      "repo": "https://github.com/TFboy1/MITI",
+      "previewUrl": "https://miti-fp90.onrender.com/",
+      "download": "",
+      "status": "published",
+      "source": "https://github.com/TFboy1/MITI"
+    },
+    {
+      "id": "clipflow",
+      "category": "apps",
+      "title": "ClipFlow（剪切流）",
+      "headline": "灵感，跨越设备",
+      "icon": "clip",
+      "description": "跨平台剪贴板超级中转站。",
+      "tags": [
+        "安卓",
+        "网页"
+      ],
+      "repo": "",
+      "previewUrl": "",
+      "download": "",
+      "status": "polishing",
+      "source": "https://tfboyhomepage.netlify.app/"
+    }
+  ]
+}

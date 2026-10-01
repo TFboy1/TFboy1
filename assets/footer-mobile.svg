@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" width="600" height="290" viewBox="0 0 600 290" fill="none" role="img" aria-labelledby="title description">
   <title id="title">Good ideas deserve real software.</title>
-  <desc id="description">好的想法，值得变成真实的软件。Building for the age of AI agents.</desc>
+  <desc id="description">好的想法，值得变成真实的软件。Build useful things. Make room for curiosity.</desc>
   <defs>
     <linearGradient id="background" x1="0" y1="0" x2="600" y2="290" gradientUnits="userSpaceOnUse">
       <stop stop-color="#0c1722"/><stop offset=".5" stop-color="#080e17"/><stop offset="1" stop-color="#10242a"/>
@@ -109,7 +109,7 @@
     <path d="M300 32L306 38L300 44L294 38Z" stroke="#74f8ce" class="signal"/>
     <text x="300" y="108" font-size="34" fill="#edf7f7" text-anchor="middle" font-weight="700" letter-spacing="-1">Good ideas deserve</text>
          <text x="300" y="151" font-size="34" fill="#d6fff2" text-anchor="middle" font-weight="700" letter-spacing="-1">real software.</text>
-         <text x="300" y="197" font-size="18" fill="#91a9b8" text-anchor="middle">Building for the age of AI agents.</text>
+         <text x="300" y="197" font-size="18" fill="#91a9b8" text-anchor="middle">Build useful things. Make room for curiosity.</text>
          <text x="300" y="251" font-size="12" fill="#74f8ce" class="mono" text-anchor="middle" letter-spacing="2">TFBOY1 / KEEP BUILDING</text>
   
     <rect width="600" height="290" fill="url(#dust)" pointer-events="none"/>
