@@ -31,7 +31,7 @@ MiniMax H3 驱动的全自动 AI 视频导演流水线：自动分镜、批量�
 
 <code>AIGC · 视频生成 · Codex Skill</code>
 
-<a href="https://github.com/TFboy1/oh-my-minimaxh3-director"><kbd>GitHub ↗</kbd></a> &nbsp; <a href="https://github.com/TFboy1/oh-my-minimaxh3-director/stargazers"><kbd>★ Stars 138</kbd></a> &nbsp; <a href="https://github.com/TFboy1/oh-my-minimaxh3-director/forks"><kbd>⑂ Forks 18</kbd></a>
+<a href="https://github.com/TFboy1/oh-my-minimaxh3-director"><kbd>GitHub ↗</kbd></a> &nbsp; <a href="https://github.com/TFboy1/oh-my-minimaxh3-director/stargazers"><kbd>★ Stars 137</kbd></a> &nbsp; <a href="https://github.com/TFboy1/oh-my-minimaxh3-director/forks"><kbd>⑂ Forks 18</kbd></a>
 
 <h3>dsh-minecraft-ui</h3>
 
@@ -39,7 +39,7 @@ MiniMax H3 驱动的全自动 AI 视频导演流水线：自动分镜、批量�
 
 <code>DeepSeek Harness · Three.js · Agent UI</code>
 
-<a href="https://github.com/TFboy1/dsh-minecraft-ui"><kbd>GitHub ↗</kbd></a> &nbsp; <a href="https://github.com/TFboy1/dsh-minecraft-ui/stargazers"><kbd>★ Stars 18</kbd></a> &nbsp; <a href="https://github.com/TFboy1/dsh-minecraft-ui/forks"><kbd>⑂ Forks 0</kbd></a>
+<a href="https://github.com/TFboy1/dsh-minecraft-ui"><kbd>GitHub ↗</kbd></a> &nbsp; <a href="https://github.com/TFboy1/dsh-minecraft-ui/stargazers"><kbd>★ Stars 19</kbd></a> &nbsp; <a href="https://github.com/TFboy1/dsh-minecraft-ui/forks"><kbd>⑂ Forks 0</kbd></a>
 
 <h3>vibe-git</h3>
 
