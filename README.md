@@ -15,7 +15,7 @@
 
 <code>AIGC · 论文 · 自动化</code>
 
-<a href="https://github.com/TFboy1/academic-paper-writer"><kbd>GitHub ↗</kbd></a> &nbsp; <a href="https://github.com/TFboy1/academic-paper-writer/stargazers"><kbd>★ Stars 250</kbd></a> &nbsp; <a href="https://github.com/TFboy1/academic-paper-writer/forks"><kbd>⑂ Forks 14</kbd></a>
+<a href="https://github.com/TFboy1/academic-paper-writer"><kbd>GitHub ↗</kbd></a> &nbsp; <a href="https://github.com/TFboy1/academic-paper-writer/stargazers"><kbd>★ Stars 251</kbd></a> &nbsp; <a href="https://github.com/TFboy1/academic-paper-writer/forks"><kbd>⑂ Forks 14</kbd></a>
 
 <h3>ChatGPT-Share-Gate</h3>
 
@@ -31,7 +31,7 @@ MiniMax H3 驱动的全自动 AI 视频导演流水线：自动分镜、批量�
 
 <code>AIGC · 视频生成 · Codex Skill</code>
 
-<a href="https://github.com/TFboy1/oh-my-minimaxh3-director"><kbd>GitHub ↗</kbd></a> &nbsp; <a href="https://github.com/TFboy1/oh-my-minimaxh3-director/stargazers"><kbd>★ Stars 141</kbd></a> &nbsp; <a href="https://github.com/TFboy1/oh-my-minimaxh3-director/forks"><kbd>⑂ Forks 19</kbd></a>
+<a href="https://github.com/TFboy1/oh-my-minimaxh3-director"><kbd>GitHub ↗</kbd></a> &nbsp; <a href="https://github.com/TFboy1/oh-my-minimaxh3-director/stargazers"><kbd>★ Stars 142</kbd></a> &nbsp; <a href="https://github.com/TFboy1/oh-my-minimaxh3-director/forks"><kbd>⑂ Forks 20</kbd></a>
 
 <h3>dsh-minecraft-ui</h3>
 
