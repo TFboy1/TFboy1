@@ -39,7 +39,7 @@ MiniMax H3 驱动的全自动 AI 视频导演流水线：自动分镜、批量�
 
 <code>DeepSeek Harness · Three.js · Agent UI</code>
 
-<a href="https://github.com/TFboy1/dsh-minecraft-ui"><kbd>GitHub ↗</kbd></a> &nbsp; <a href="https://github.com/TFboy1/dsh-minecraft-ui/stargazers"><kbd>★ Stars 19</kbd></a> &nbsp; <a href="https://github.com/TFboy1/dsh-minecraft-ui/forks"><kbd>⑂ Forks 0</kbd></a>
+<a href="https://github.com/TFboy1/dsh-minecraft-ui"><kbd>GitHub ↗</kbd></a> &nbsp; <a href="https://github.com/TFboy1/dsh-minecraft-ui/stargazers"><kbd>★ Stars 20</kbd></a> &nbsp; <a href="https://github.com/TFboy1/dsh-minecraft-ui/forks"><kbd>⑂ Forks 0</kbd></a>
 
 <h3>vibe-git</h3>
 
@@ -171,6 +171,6 @@ AIGC 日记应用，带有类似“死了么”的日常确认功能。
 每一格来自真实 GitHub 贡献记录，金色星芒会根据有贡献的日期和次数重新寻路。每 5 分钟检查数据源，数据变化后自动更新；GitHub 调度与图片缓存可能有延迟。图中保留日期、贡献次数和数据快照更新时间。
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="./assets/github-contribution-grid-snake-dark.svg?v=158629a39f13" />
-  <img width="100%" src="./assets/github-contribution-grid-snake.svg?v=158629a39f13" alt="TFboy1 的真实贡献日历：蓝色格子按贡献等级着色，四芒星带着金色尾迹巡游。" />
+  <source media="(prefers-color-scheme: dark)" srcset="./assets/github-contribution-grid-snake-dark.svg?v=1c91a58e2fb9" />
+  <img width="100%" src="./assets/github-contribution-grid-snake.svg?v=1c91a58e2fb9" alt="TFboy1 的真实贡献日历：蓝色格子按贡献等级着色，四芒星带着金色尾迹巡游。" />
 </picture>
