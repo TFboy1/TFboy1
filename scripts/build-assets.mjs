@@ -1,4 +1,4 @@
-import { mkdir, readFile, writeFile, unlink, rmdir } from 'node:fs/promises';
+import { mkdir, readFile, readdir, writeFile, unlink, rmdir } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { createHash } from 'node:crypto';
 import { createProfileArtwork } from './profile-artwork.mjs';
@@ -143,13 +143,21 @@ const artwork = [
   ['hero.svg', hero()], ['hero-mobile.svg', hero(true)],
   ['github-contribution-grid-snake.svg', profileArtwork.snake(calendar, false)],
   ['github-contribution-grid-snake-dark.svg', profileArtwork.snake(calendar, true)],
+  ...profileArtwork.projectButtons(projects, repositories),
 ];
-const desktopBytes = Buffer.byteLength(artwork[0][1], 'utf8') + Math.max(...artwork.slice(2).map(([, content]) => Buffer.byteLength(content, 'utf8')));
+const desktopBytes = Buffer.byteLength(artwork[0][1], 'utf8') + Math.max(...artwork.slice(2, 4).map(([, content]) => Buffer.byteLength(content, 'utf8')))
+  + artwork.slice(4).reduce((sum, [, content]) => sum + Buffer.byteLength(content, 'utf8'), 0);
 if (desktopBytes > 100 * 1024) throw new Error(`桌面图片组合超出 100 KiB：${desktopBytes} bytes`);
 await mkdir(outputDirectory, { recursive: true });
+const buttonDirectory = new URL('buttons/', outputDirectory);
+await mkdir(buttonDirectory, { recursive: true });
 for (const [name, content] of artwork) {
   await writeFile(new URL(name, outputDirectory), content, 'utf8');
   console.log(`Built ${name} (${(Buffer.byteLength(content, 'utf8') / 1024).toFixed(1)} KiB)`);
+}
+const buttonFiles = new Set(artwork.slice(4).map(([name]) => name.slice('buttons/'.length)));
+for (const file of await readdir(buttonDirectory)) {
+  if (/^(?:github|stars-(?:\d+|unknown)|forks-(?:\d+|unknown)|play|open|docs|download|portfolio)\.svg$/.test(file) && !buttonFiles.has(file)) await unlink(new URL(file, buttonDirectory));
 }
 // Remove only known outputs of the previous generator, never unrelated assets.
 const obsolete = ['divider.svg', 'footer.svg', 'footer-mobile.svg', 'contribution-activity.svg', 'contribution-activity-mobile.svg', ...projects.map(project => `projects/${project.id}.svg`)];
@@ -157,8 +165,9 @@ for (const name of obsolete) {
   await unlink(new URL(name, outputDirectory)).catch(error => { if (error.code !== 'ENOENT') throw error; });
 }
 await rmdir(new URL('projects/', outputDirectory)).catch(error => { if (!['ENOENT', 'ENOTEMPTY', 'EEXIST'].includes(error.code)) throw error; });
-const snakeVersion = createHash('sha256').update(artwork.slice(2).map(([, content]) => content).join('')).digest('hex').slice(0, 12);
+const snakeVersion = createHash('sha256').update(artwork.slice(2, 4).map(([, content]) => content).join('')).digest('hex').slice(0, 12);
 const updatedReadme = readme.replace(/(<!-- PROJECTS:START -->)[\s\S]*?(<!-- PROJECTS:END -->)/, (_, start, end) => `${start}\n\n${projectSection}\n\n${end}`)
-  .replace(/(\.\/assets\/github-contribution-grid-snake(?:-dark)?\.svg)(?:\?v=[a-f0-9]+)?/g, (_, path) => `${path}?v=${snakeVersion}`);
+  .replace(/(\.\/assets\/github-contribution-grid-snake(?:-dark)?\.svg)(?:\?v=[a-f0-9]+)?/g, (_, path) => `${path}?v=${snakeVersion}`)
+  .replace(/\r\n/g, '\n');
 if (updatedReadme !== readme) await writeFile(readmePath, updatedReadme, 'utf8');
-console.log(`\nGenerated ${artwork.length} SVG assets in ${fileURLToPath(outputDirectory)}; desktop pair ${(desktopBytes / 1024).toFixed(1)} KiB`);
+console.log(`\nGenerated ${artwork.length} SVG assets in ${fileURLToPath(outputDirectory)}; desktop assets ${(desktopBytes / 1024).toFixed(1)} KiB`);

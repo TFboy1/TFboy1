@@ -2,6 +2,39 @@
 import { contributionRoute } from './snake-route.mjs';
 import { repositorySlug } from './repository-data.mjs';
 export function createProfileArtwork({ svg, text, theme, escapeXml }) {
+  const buttonLabels = { github: 'GitHub', stars: 'Stars', forks: 'Forks', play: '试玩', open: '打开', docs: '文档', download: '下载', portfolio: '作品介绍' };
+  function buttonFile(kind, value) {
+    const count = Number.isSafeInteger(value) && value >= 0 ? value : 'unknown';
+    return `buttons/${kind}${kind === 'stars' || kind === 'forks' ? `-${count}` : ''}.svg`;
+  }
+  function projectButton(url, kind, value) {
+    const count = Number.isSafeInteger(value) && value >= 0 ? value : '—';
+    const label = `${buttonLabels[kind]}${kind === 'stars' || kind === 'forks' ? ` ${count}` : ' ↗'}`;
+    return `<a href="${escapeXml(url)}"><img src="./assets/${buttonFile(kind, value)}" height="26" align="middle" alt="${escapeXml(label)}" /></a>`;
+  }
+  function projectButtons(projects, repositorySnapshot) {
+    const buttons = new Map(Object.keys(buttonLabels).filter(kind => kind !== 'stars' && kind !== 'forks').map(kind => [buttonFile(kind), { kind }]));
+    for (const project of projects.filter(project => project.repo)) {
+      const stats = repositorySnapshot.repositories[repositorySlug(project.repo)] || {};
+      for (const kind of ['stars', 'forks']) buttons.set(buttonFile(kind, stats[kind]), { kind, value: stats[kind] });
+    }
+    return [...buttons].map(([file, { kind, value }]) => {
+      const metric = kind === 'stars' || kind === 'forks';
+      const count = Number.isSafeInteger(value) && value >= 0 ? String(value) : '—';
+      const label = `${buttonLabels[kind]}${metric ? ` ${count}` : ' ↗'}`;
+      const width = metric ? 78 + count.length * 7 : kind === 'github' ? 100 : kind === 'portfolio' ? 90 : 66;
+      const face = kind === 'github' ? 'fill="url(#face)"' : 'class="surface"';
+      const outline = kind === 'github'
+        ? `M${width} .5H6Q.5 .5 .5 6V20Q.5 25.5 6 25.5H${width}`
+        : kind === 'stars' ? `M${width} .5H.5V25.5H${width}`
+        : kind === 'forks' ? `M.5 .5H${width - 6}Q${width - .5} .5 ${width - .5} 6V20Q${width - .5} 25.5 ${width - 6} 25.5H.5Z`
+        : `M6 .5H${width - 6}Q${width - .5} .5 ${width - .5} 6V20Q${width - .5} 25.5 ${width - 6} 25.5H6Q.5 25.5 .5 20V6Q.5 .5 6 .5Z`;
+      const icon = kind === 'stars' ? '<path d="m13 6 2.1 4.3 4.7.7-3.4 3.3.8 4.7-4.2-2.2-4.2 2.2.8-4.7-3.4-3.3 4.7-.7Z"/>'
+        : kind === 'forks' ? '<path d="M9 9v2q0 3 4 3h3q3 0 3-3V9M14 14v4"/><circle cx="9" cy="7" r="2"/><circle cx="19" cy="7" r="2"/><circle cx="14" cy="20" r="2"/>'
+        : kind === 'github' ? '<path d="M12 8v10m0-5h6V8"/><circle cx="12" cy="6" r="2"/><circle cx="18" cy="6" r="2"/><circle cx="12" cy="20" r="2"/>' : '';
+      return [file, `<?xml version="1.0" encoding="UTF-8"?>\n<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="26" viewBox="0 0 ${width} 26" role="img" aria-label="${escapeXml(label)}"><title>${escapeXml(label)}</title><defs><linearGradient id="face" x2="1" y2="1"><stop stop-color="#222f48"/><stop offset="1" stop-color="#111b30"/></linearGradient></defs><style>.surface{fill:#fffaf0}.label{fill:#27364a}.icon{stroke:#9c762c}.main{fill:#f5dfad;stroke:#f5dfad}@media(prefers-color-scheme:dark){.surface{fill:#161c29}.label{fill:#ecd9ad}.icon{stroke:#e2bc65}}</style><path d="${outline}" ${face} stroke="#b59a59" stroke-width="1"/><g class="${kind === 'github' ? 'main' : 'icon'}" fill="none" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">${icon}</g><text x="${icon ? 29 : width / 2}" y="17" ${icon ? '' : 'text-anchor="middle"'} class="${kind === 'github' ? 'main' : 'label'}" stroke="none" font-family="Segoe UI,Microsoft YaHei,sans-serif" font-size="11" font-weight="500">${escapeXml(label)}</text></svg>\n`];
+    });
+  }
   function syncLabel(snapshot) {
     return new Intl.DateTimeFormat('sv-SE', {
       timeZone: 'Asia/Shanghai', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false,
@@ -75,17 +108,15 @@ export function createProfileArtwork({ svg, text, theme, escapeXml }) {
       const links = [];
       if (project.repo) {
         const stats = repositorySnapshot.repositories[repositorySlug(project.repo)];
-        links.push(`<a href="${escapeXml(project.repo)}"><kbd>GitHub ↗</kbd></a>`);
-        links.push(`<a href="${escapeXml(project.repo)}/stargazers"><kbd>★ Stars ${stats?.stars ?? '—'}</kbd></a>`);
-        links.push(`<a href="${escapeXml(project.repo)}/forks"><kbd>⑂ Forks ${stats?.forks ?? '—'}</kbd></a>`);
+        links.push(projectButton(project.repo, 'github') + projectButton(`${project.repo}/stargazers`, 'stars', stats?.stars) + projectButton(`${project.repo}/forks`, 'forks', stats?.forks));
       }
       if (project.previewUrl && project.previewUrl !== project.repo) {
-        const label = project.category === 'games' ? '试玩' : project.id === 'vibe-git' ? '文档' : '打开';
-        links.push(`<a href="${escapeXml(project.previewUrl)}"><kbd>${label} ↗</kbd></a>`);
+        const kind = project.category === 'games' ? 'play' : project.id === 'vibe-git' ? 'docs' : 'open';
+        links.push(projectButton(project.previewUrl, kind));
       }
-      if (project.download) links.push(`<a href="${escapeXml(project.download)}"><kbd>下载 ↗</kbd></a>`);
-      if (!links.length) links.push('<a href="https://tfboyhomepage.netlify.app/"><kbd>作品介绍 ↗</kbd></a>');
-      return `<${heading}>${escapeXml(name)}</${heading}>\n\n${escapeXml(project.description)}\n\n<code>${escapeXml(project.tags.join(' · '))}</code>${project.status === 'polishing' ? ' · <strong>正在打磨</strong>' : ''}\n\n${links.join(' &nbsp; ')}`;
+      if (project.download) links.push(projectButton(project.download, 'download'));
+      if (!links.length) links.push(projectButton('https://tfboyhomepage.netlify.app/', 'portfolio'));
+      return `<${heading}>${escapeXml(name)} &nbsp; ${links.join(' &nbsp; ')}</${heading}>\n\n${escapeXml(project.description)}\n\n<code>${escapeXml(project.tags.join(' · '))}</code>${project.status === 'polishing' ? ' · <strong>正在打磨</strong>' : ''}`;
     }
     const categories = [['tools','AI 与开发工具'],['games','游戏与互动世界'],['apps','应用与日常工具']];
     const others = categories.map(([category,title]) => {
@@ -95,5 +126,5 @@ export function createProfileArtwork({ svg, text, theme, escapeXml }) {
     return `## 01 / 置顶项目\n\n${pinned.map(project => entry(project,true)).join('\n\n')}\n\n## 02 / 更多作品\n\n<details>\n<summary>展开其他 ${remaining.length} 个作品 · 游戏与应用</summary>\n\n${others}\n\n</details>`;
   }
 
-  return { projectSection, snake };
+  return { projectSection, projectButtons, snake };
 }

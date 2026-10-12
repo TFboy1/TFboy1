@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { repositorySlug, parseRepositoryStats, updateRepositoryStats } from './repository-data.mjs';
+import { createProfileArtwork } from './profile-artwork.mjs';
 
 test('accepts only GitHub repository URLs, preserving case', () => {
   assert.equal(repositorySlug('https://github.com/TFboy1/ChatGPT-Share-Gate/'), 'TFboy1/ChatGPT-Share-Gate');
@@ -18,4 +19,18 @@ test('unchanged statistics preserve the snapshot instead of creating timestamp-o
   const previous = { stars: 10, forks: 2, fetchedAt: '2026-10-01T00:00:00Z' };
   assert.equal(updateRepositoryStats(previous, { stars: 10, forks: 2 }, 'later'), previous);
   assert.deepEqual(updateRepositoryStats(previous, { stars: 11, forks: 2 }, 'later'), { stars: 11, forks: 2, fetchedAt: 'later' });
+});
+
+test('button assets distinguish real zero from invalid counts and use safe changing filenames', () => {
+  const artwork = createProfileArtwork({ escapeXml: value => String(value).replaceAll('&', '&amp;').replaceAll('"', '&quot;').replaceAll('<', '&lt;').replaceAll('>', '&gt;') });
+  const projects = [{ repo: 'https://github.com/TFboy1/example' }];
+  const files = stars => artwork.projectButtons(projects, { repositories: { 'TFboy1/example': { stars, forks: 0 } } });
+  assert(files(0).some(([name]) => name === 'buttons/stars-0.svg'));
+  assert(files(251).some(([name, content]) => name === 'buttons/stars-251.svg' && content.includes('Stars 251')));
+  assert(files(252).some(([name]) => name === 'buttons/stars-252.svg'));
+  for (const invalid of [undefined, -1, '../escape', '251']) {
+    const assets = files(invalid);
+    assert(assets.some(([name, content]) => name === 'buttons/stars-unknown.svg' && content.includes('Stars —')));
+    assert(assets.every(([name]) => /^buttons\/[a-z0-9-]+\.svg$/.test(name)));
+  }
 });
