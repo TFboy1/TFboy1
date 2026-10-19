@@ -27,7 +27,7 @@ MiniMax H3 驱动的全自动 AI 视频导演流水线：自动分镜、批量�
 
 <code>AIGC · 视频生成 · Codex Skill</code>
 
-<h3>dsh-minecraft-ui &nbsp; <a href="https://github.com/TFboy1/dsh-minecraft-ui"><img src="./assets/buttons/github.svg" height="26" align="middle" alt="GitHub ↗" /></a><a href="https://github.com/TFboy1/dsh-minecraft-ui/stargazers"><img src="./assets/buttons/stars-20.svg" height="26" align="middle" alt="Stars 20" /></a><a href="https://github.com/TFboy1/dsh-minecraft-ui/forks"><img src="./assets/buttons/forks-0.svg" height="26" align="middle" alt="Forks 0" /></a></h3>
+<h3>dsh-minecraft-ui &nbsp; <a href="https://github.com/TFboy1/dsh-minecraft-ui"><img src="./assets/buttons/github.svg" height="26" align="middle" alt="GitHub ↗" /></a><a href="https://github.com/TFboy1/dsh-minecraft-ui/stargazers"><img src="./assets/buttons/stars-21.svg" height="26" align="middle" alt="Stars 21" /></a><a href="https://github.com/TFboy1/dsh-minecraft-ui/forks"><img src="./assets/buttons/forks-0.svg" height="26" align="middle" alt="Forks 0" /></a></h3>
 
 把 DeepSeek Harness 的工作空间变成 Minecraft 风格的方块世界，探索体素场景、装备模型并与 Agent 一起工作。
 
