@@ -15,7 +15,7 @@
 
 <code>AIGC · 论文 · 自动化</code>
 
-<h3>ChatGPT-Share-Gate &nbsp; <a href="https://github.com/TFboy1/ChatGPT-Share-Gate"><img src="./assets/buttons/github.svg" height="26" align="middle" alt="GitHub ↗" /></a><a href="https://github.com/TFboy1/ChatGPT-Share-Gate/stargazers"><img src="./assets/buttons/stars-6.svg" height="26" align="middle" alt="Stars 6" /></a><a href="https://github.com/TFboy1/ChatGPT-Share-Gate/forks"><img src="./assets/buttons/forks-0.svg" height="26" align="middle" alt="Forks 0" /></a></h3>
+<h3>ChatGPT-Share-Gate &nbsp; <a href="https://github.com/TFboy1/ChatGPT-Share-Gate"><img src="./assets/buttons/github.svg" height="26" align="middle" alt="GitHub ↗" /></a><a href="https://github.com/TFboy1/ChatGPT-Share-Gate/stargazers"><img src="./assets/buttons/stars-6.svg" height="26" align="middle" alt="Stars 6" /></a><a href="https://github.com/TFboy1/ChatGPT-Share-Gate/forks"><img src="./assets/buttons/forks-1.svg" height="26" align="middle" alt="Forks 1" /></a></h3>
 
 通过 Playwright 接管本地已登录的 ChatGPT 浏览器，结合 Telegram 和 Streamlit，为共享使用提供独立会话与请求排队。
 
