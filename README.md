@@ -9,7 +9,7 @@
 
 ## 01 / 置顶项目
 
-<h3>academic-paper-writer &nbsp; <a href="https://github.com/TFboy1/academic-paper-writer"><img src="./assets/buttons/github.svg" height="26" align="middle" alt="GitHub ↗" /></a><a href="https://github.com/TFboy1/academic-paper-writer/stargazers"><img src="./assets/buttons/stars-251.svg" height="26" align="middle" alt="Stars 251" /></a><a href="https://github.com/TFboy1/academic-paper-writer/forks"><img src="./assets/buttons/forks-14.svg" height="26" align="middle" alt="Forks 14" /></a></h3>
+<h3>academic-paper-writer &nbsp; <a href="https://github.com/TFboy1/academic-paper-writer"><img src="./assets/buttons/github.svg" height="26" align="middle" alt="GitHub ↗" /></a><a href="https://github.com/TFboy1/academic-paper-writer/stargazers"><img src="./assets/buttons/stars-252.svg" height="26" align="middle" alt="Stars 252" /></a><a href="https://github.com/TFboy1/academic-paper-writer/forks"><img src="./assets/buttons/forks-14.svg" height="26" align="middle" alt="Forks 14" /></a></h3>
 
 辅助论文研究、撰写、排版与文档输出的 Agent Skill，支持结构化流程和学校、会议的格式要求。
 
