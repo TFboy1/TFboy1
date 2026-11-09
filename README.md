@@ -9,7 +9,7 @@
 
 ## 01 / 置顶项目
 
-<h3>academic-paper-writer &nbsp; <a href="https://github.com/TFboy1/academic-paper-writer"><img src="./assets/buttons/github.svg" height="26" align="middle" alt="GitHub ↗" /></a><a href="https://github.com/TFboy1/academic-paper-writer/stargazers"><img src="./assets/buttons/stars-253.svg" height="26" align="middle" alt="Stars 253" /></a><a href="https://github.com/TFboy1/academic-paper-writer/forks"><img src="./assets/buttons/forks-14.svg" height="26" align="middle" alt="Forks 14" /></a></h3>
+<h3>academic-paper-writer &nbsp; <a href="https://github.com/TFboy1/academic-paper-writer"><img src="./assets/buttons/github.svg" height="26" align="middle" alt="GitHub ↗" /></a><a href="https://github.com/TFboy1/academic-paper-writer/stargazers"><img src="./assets/buttons/stars-254.svg" height="26" align="middle" alt="Stars 254" /></a><a href="https://github.com/TFboy1/academic-paper-writer/forks"><img src="./assets/buttons/forks-14.svg" height="26" align="middle" alt="Forks 14" /></a></h3>
 
 辅助论文研究、撰写、排版与文档输出的 Agent Skill，支持结构化流程和学校、会议的格式要求。
 
@@ -137,6 +137,6 @@ AIGC 日记应用，带有类似“死了么”的日常确认功能。
 每一格来自真实 GitHub 贡献记录，金色星芒会根据有贡献的日期和次数重新寻路。每 5 分钟检查数据源，数据变化后自动更新；GitHub 调度与图片缓存可能有延迟。图中保留日期、贡献次数和数据快照更新时间。
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="./assets/github-contribution-grid-snake-dark.svg?v=9cc8a669b128" />
-  <img width="100%" src="./assets/github-contribution-grid-snake.svg?v=9cc8a669b128" alt="TFboy1 的真实贡献日历：蓝色格子按贡献等级着色，四芒星带着金色尾迹巡游。" />
+  <source media="(prefers-color-scheme: dark)" srcset="./assets/github-contribution-grid-snake-dark.svg?v=6134a86b36bd" />
+  <img width="100%" src="./assets/github-contribution-grid-snake.svg?v=6134a86b36bd" alt="TFboy1 的真实贡献日历：蓝色格子按贡献等级着色，四芒星带着金色尾迹巡游。" />
 </picture>
