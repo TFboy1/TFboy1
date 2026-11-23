@@ -21,7 +21,7 @@
 
 <code>Playwright · Telegram · Streamlit</code>
 
-<h3>oh-my-minimaxh3-director &nbsp; <a href="https://github.com/TFboy1/oh-my-minimaxh3-director"><img src="./assets/buttons/github.svg" height="26" align="middle" alt="GitHub ↗" /></a><a href="https://github.com/TFboy1/oh-my-minimaxh3-director/stargazers"><img src="./assets/buttons/stars-177.svg" height="26" align="middle" alt="Stars 177" /></a><a href="https://github.com/TFboy1/oh-my-minimaxh3-director/forks"><img src="./assets/buttons/forks-24.svg" height="26" align="middle" alt="Forks 24" /></a></h3>
+<h3>oh-my-minimaxh3-director &nbsp; <a href="https://github.com/TFboy1/oh-my-minimaxh3-director"><img src="./assets/buttons/github.svg" height="26" align="middle" alt="GitHub ↗" /></a><a href="https://github.com/TFboy1/oh-my-minimaxh3-director/stargazers"><img src="./assets/buttons/stars-178.svg" height="26" align="middle" alt="Stars 178" /></a><a href="https://github.com/TFboy1/oh-my-minimaxh3-director/forks"><img src="./assets/buttons/forks-24.svg" height="26" align="middle" alt="Forks 24" /></a></h3>
 
 MiniMax H3 驱动的全自动 AI 视频导演流水线：自动分镜、批量生成，再由剪映一键拼合。
 
@@ -137,6 +137,6 @@ AIGC 日记应用，带有类似“死了么”的日常确认功能。
 每一格来自真实 GitHub 贡献记录，金色星芒会根据有贡献的日期和次数重新寻路。每 5 分钟检查数据源，数据变化后自动更新；GitHub 调度与图片缓存可能有延迟。图中保留日期、贡献次数和数据快照更新时间。
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="./assets/github-contribution-grid-snake-dark.svg?v=6c69c005738c" />
-  <img width="100%" src="./assets/github-contribution-grid-snake.svg?v=6c69c005738c" alt="TFboy1 的真实贡献日历：蓝色格子按贡献等级着色，四芒星带着金色尾迹巡游。" />
+  <source media="(prefers-color-scheme: dark)" srcset="./assets/github-contribution-grid-snake-dark.svg?v=c3eed5ab95ec" />
+  <img width="100%" src="./assets/github-contribution-grid-snake.svg?v=c3eed5ab95ec" alt="TFboy1 的真实贡献日历：蓝色格子按贡献等级着色，四芒星带着金色尾迹巡游。" />
 </picture>
